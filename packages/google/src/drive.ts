@@ -1,7 +1,9 @@
 import type { AxFunction } from '@ax-llm/ax';
-import { drive_v3, google } from '@googleapis/drive';
+import { drive } from '@googleapis/drive';
+import { google } from 'googleapis';
+import type { Config } from '../../common/src/config';
 
-export interface DriveConfig {
+export interface DriveConfig extends Config {
   credentials: {
     clientId: string;
     clientSecret: string;
@@ -10,39 +12,62 @@ export interface DriveConfig {
   };
 }
 
-export function createDriveSearchFunction(config: DriveConfig): AxFunction {
-  return {
-    name: 'DriveSearch',
-    description: 'Search Google Drive files',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Drive search query'
-        }
+export class DriveSearch {
+  private config: DriveConfig;
+  private state: any;
+
+  constructor(config: DriveConfig, state: any) {
+    this.config = config;
+    this.state = state;
+  }
+
+  toFunction(): AxFunction {
+    return {
+      name: 'DriveSearch',
+      description: 'Search Google Drive files',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Drive search query'
+          }
+        },
+        required: ['query']
       },
-      required: ['query']
-    },
-    func: async ({ query }) => {
-      const auth = new google.auth.OAuth2(
-        config.credentials.clientId,
-        config.credentials.clientSecret,
-        config.credentials.redirectUri
-      );
-      
-      auth.setCredentials({
-        refresh_token: config.credentials.refreshToken
-      });
+      func: async ({ query }) => {
+        // Resolve credentials: use values from config; fallback to state.env if missing.
+        const clientId = this.config.credentials.clientId || (this.state?.env && this.state.env.DRIVE_CLIENT_ID);
+        const clientSecret = this.config.credentials.clientSecret || (this.state?.env && this.state.env.DRIVE_CLIENT_SECRET);
+        const redirectUri = this.config.credentials.redirectUri || (this.state?.env && this.state.env.DRIVE_REDIRECT_URI);
+        const refreshToken = this.config.credentials.refreshToken || (this.state?.env && this.state.env.DRIVE_REFRESH_TOKEN);
+        
+        if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
+          throw new Error("Missing required Drive credentials. Please provide clientId, clientSecret, redirectUri, and refreshToken either in the config or in state.env (expected keys: DRIVE_CLIENT_ID, DRIVE_CLIENT_SECRET, DRIVE_REDIRECT_URI, DRIVE_REFRESH_TOKEN).");
+        }
 
-      const drive = google.drive({ version: 'v3', auth });
-      
-      const response = await drive.files.list({
-        q: query,
-        fields: 'files(id, name, mimeType, webViewLink)'
-      });
+        const auth = new google.auth.OAuth2(
+          clientId,
+          clientSecret,
+          redirectUri
+        );
 
-      return response.data;
-    }
-  };
+        auth.setCredentials({
+          refresh_token: refreshToken
+        });
+
+        const driveClient = google.drive({
+          version: 'v3',
+          auth
+        });
+        
+        const response = await driveClient.files.list({
+          q: query,
+          fields: 'files(id, name, mimeType, webViewLink)'
+        });
+
+        return response.data;
+      }
+    };
+  }
 }
