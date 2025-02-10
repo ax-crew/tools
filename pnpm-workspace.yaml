@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+  # Add other directories if needed, like:
+  # - 'apps/*'
+  # - 'libs/*' 
