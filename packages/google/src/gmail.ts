@@ -1,30 +1,18 @@
 import type { AxFunction } from '@ax-llm/ax';
 import { gmail } from '@googleapis/gmail';
 import { google } from 'googleapis';
-import type { Config } from '../../common/src/config';
-
-export interface GmailConfig extends Config {
-  credentials: {
-    clientId: string;
-    clientSecret: string;
-    redirectUri: string;
-    refreshToken: string;
-  };
-}
 
 export class GmailSearch {
-  private config: GmailConfig;
   private state: any;
 
-  constructor(config: GmailConfig, state: any) {
-    this.config = config;
+  constructor(state: any) {
     this.state = state;
   }
 
   toFunction(): AxFunction {
     return {
       name: 'GmailSearch',
-      description: 'Search Gmail emails using query',
+      description: `Search Gmail emails using the same query format as Gmail search. For example, "from:john@example.com" or "is:unread" or "label:inbox" or "after:2025/01/01" or a combination of these.`,
       parameters: {
         type: 'object',
         properties: {
@@ -36,14 +24,15 @@ export class GmailSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        // Resolve credentials: use values from config; fallback to state.env if missing.
-        const clientId = this.config.credentials.clientId || (this.state?.env && this.state.env.GMAIL_CLIENT_ID);
-        const clientSecret = this.config.credentials.clientSecret || (this.state?.env && this.state.env.GMAIL_CLIENT_SECRET);
-        const redirectUri = this.config.credentials.redirectUri || (this.state?.env && this.state.env.GMAIL_REDIRECT_URI);
-        const refreshToken = this.config.credentials.refreshToken || (this.state?.env && this.state.env.GMAIL_REFRESH_TOKEN);
+        const env = this.state.get('env');
         
+        const clientId = env?.GMAIL_CLIENT_ID;
+        const clientSecret = env?.GMAIL_CLIENT_SECRET;
+        const redirectUri = env?.GMAIL_REDIRECT_URI;
+        const refreshToken = env?.GMAIL_REFRESH_TOKEN;
+                
         if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
-          throw new Error("Missing required Gmail credentials. Please provide clientId, clientSecret, redirectUri, and refreshToken either in the config or in state.env (expected keys: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, GMAIL_REFRESH_TOKEN).");
+          throw new Error(`Missing required Gmail credentials in environment variables. Please provide GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, and GMAIL_REFRESH_TOKEN. Got clientId: ${clientId}, clientSecret: ${clientSecret}, redirectUri: ${redirectUri}, refreshToken: ${refreshToken}`);
         }
 
         const auth = new google.auth.OAuth2(
@@ -73,11 +62,9 @@ export class GmailSearch {
 }
 
 export class GmailSend {
-  private config: GmailConfig;
   private state: any;
 
-  constructor(config: GmailConfig, state: any) {
-    this.config = config;
+  constructor(state: any) {
     this.state = state;
   }
 
@@ -108,14 +95,16 @@ export class GmailSend {
         required: ['from', 'to', 'subject', 'body']
       },
       func: async ({ from, to, subject, body }) => {
-        // Resolve credentials: use values from config; fallback to state.env if missing.
-        const clientId = this.config.credentials.clientId || (this.state?.env && this.state.env.GMAIL_CLIENT_ID);
-        const clientSecret = this.config.credentials.clientSecret || (this.state?.env && this.state.env.GMAIL_CLIENT_SECRET);
-        const redirectUri = this.config.credentials.redirectUri || (this.state?.env && this.state.env.GMAIL_REDIRECT_URI);
-        const refreshToken = this.config.credentials.refreshToken || (this.state?.env && this.state.env.GMAIL_REFRESH_TOKEN);
+        // Use state.get() to retrieve env values
+        const env = this.state.get('env');
+        
+        const clientId = env?.GMAIL_CLIENT_ID;
+        const clientSecret = env?.GMAIL_CLIENT_SECRET;
+        const redirectUri = env?.GMAIL_REDIRECT_URI;
+        const refreshToken = env?.GMAIL_REFRESH_TOKEN;
         
         if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
-          throw new Error("Missing required Gmail credentials. Please provide clientId, clientSecret, redirectUri, and refreshToken either in the config or in state.env (expected keys: GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, GMAIL_REFRESH_TOKEN).");
+          throw new Error(`Missing required Gmail credentials in environment variables. Please provide GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, and GMAIL_REFRESH_TOKEN. Got clientId: ${clientId}, clientSecret: ${clientSecret}, redirectUri: ${redirectUri}, refreshToken: ${refreshToken}`);
         }
 
         const auth = new google.auth.OAuth2(

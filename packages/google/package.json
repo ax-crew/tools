@@ -1,8 +1,11 @@
 {
   "name": "@ax-crew/tools-google",
-  "version": "0.1.1",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "0.2.1",
+  "main": "dist/packages/google/src/index.js",
+  "types": "dist/packages/google/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
