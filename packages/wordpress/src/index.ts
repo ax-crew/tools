@@ -1,4 +1,6 @@
 import type { AxFunction } from '@ax-llm/ax';
+import fetch from 'node-fetch';
+import https from 'https';
 
 export class WordPressPost {
   private state: any;
@@ -42,6 +44,10 @@ export class WordPressPost {
         }
 
         const auth = Buffer.from(`${wpUsername}:${wpPassword}`).toString('base64');
+  
+        const httpsAgent = new https.Agent({
+          rejectUnauthorized: false
+        });
 
         try {
           const response = await fetch(`${wpUrl}/wp-json/wp/v2/posts`, {
@@ -54,7 +60,8 @@ export class WordPressPost {
               title,
               content,
               status
-            })
+            }),
+            agent: httpsAgent
           });
 
           if (!response.ok) {
@@ -62,12 +69,16 @@ export class WordPressPost {
             throw new Error(`WordPress API error: ${error}`);
           }
 
-          const post = await response.json();
+          const post = await response.json() as {
+            id: number;
+            link: string;
+            status: string;
+          };
           return {
             id: post.id,
             url: post.link,
             status: post.status
-          };
+          };        
         } catch (error: unknown) {
           throw new Error(`Failed to post to WordPress: ${error instanceof Error ? error.message : String(error)}`);
         }

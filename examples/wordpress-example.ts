@@ -6,27 +6,13 @@ const crewConfig = {
   crew: [
     {
       name: "ContentWriter",
-      description: "Writes content for a post",
-      signature: "topic:string \"The topic of the post\" -> title:string \"The title of the post\" -> content:string \"The content of the post\"",
+      description: "Write content for an engaging blog post and publish it to WordPress with the status 'publish'. The opening paragraph should be a hook to entice the reader to continue reading. The post should be 300-500 words long and formatted in HTML.",
+      signature: "topic:string \"The topic of the post\" -> postURL:string \"The URL of the published post\"",
       provider: "google-gemini",
       providerKeyName: "GEMINI_API_KEY",
       ai: {
         model: "gemini-2.0-flash",
         temperature: 0.7,
-      },
-      options: {
-        debug: true,
-      }
-    },
-    {
-      name: "Publisher",
-      description: "Publishes content to WordPress",
-      signature: "title:string \"The title of the post\" -> content:string \"The content of the post\" -> status:string \"The status of the post\"",
-      provider: "google-gemini",
-      providerKeyName: "GEMINI_API_KEY",
-      ai: {
-        model: "gemini-2.0-flash",
-        temperature: 0,
       },
       options: {
         debug: true,
@@ -42,24 +28,21 @@ const myFunctions: FunctionRegistryType = {
 
 async function main() {
   const crew = new AxCrew(crewConfig, myFunctions);
-  const agents = crew.addAgentsToCrew(["ContentWriter", "Publisher"]);
+  const agents = crew.addAgentsToCrew(["ContentWriter"]);
   const contentWriter = agents?.get("ContentWriter");
-  const publisher = agents?.get("Publisher");
 
   crew.state.set("env", {
-    WORDPRESS_URL: "https://your-wordpress-site.com",
-    WORDPRESS_USERNAME: "your-username",
-    WORDPRESS_PASSWORD: "your-application-password"
+    WORDPRESS_URL: "http://my-wordpress-site.com",
+    WORDPRESS_USERNAME: "my-username",
+    WORDPRESS_PASSWORD: "my-password"
   });
 
   console.log('Environment state:', crew.state.get("env"));
 
-  const topic = "The latest trends in AI";
-  const { title, content } = await contentWriter?.forward({ topic });
-  const status = "publish";
+  const topic = "The latest trends in Quantum Computing";
+  const contentWriterResponse = await contentWriter?.forward({ topic });
   
-  const result = await publisher?.forward({ title, content, status });
-  console.log(result);
+  console.log(contentWriterResponse);
 }
 
 main().catch(console.error); 
