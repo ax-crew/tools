@@ -1,0 +1,22 @@
+{
+  "name": "@ax-crew/tools-wordpress",
+  "version": "0.1.0",
+  "main": "dist/packages/wordpress/src/index.js",
+  "types": "dist/packages/wordpress/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "prepare": "npm run clean && npm run build"
+  },
+  "peerDependencies": {
+    "@ax-llm/ax": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
+  }
+}
