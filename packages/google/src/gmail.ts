@@ -6,7 +6,15 @@ import { google } from 'googleapis';
  * Gmail search functionality for AxCrew.
  * Enables searching through Gmail messages using Gmail's search query syntax.
  * 
- * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) in environment variables 
+ * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) to be set in the state. Example:
+ * 
+ * ```typescript
+ * crew.state.set('env', {
+ *   GMAIL_CLIENT_ID: 'your_client_id',
+ *   GMAIL_CLIENT_SECRET: 'your_client_secret',
+ *   GMAIL_REDIRECT_URI: 'your_redirect_uri',
+ *   GMAIL_REFRESH_TOKEN: 'your_refresh_token'
+ * });
  */
 export class GmailSearch {
   private state: any;

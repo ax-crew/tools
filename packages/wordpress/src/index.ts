@@ -6,8 +6,14 @@ import https from 'https';
  * WordPress post creation functionality for AxCrew.
  * Allows creating and publishing posts to a WordPress site via the WordPress REST API.
  * 
- * @requires WordPress REST API credentials (URL, username, password) in environment variables
+ * @requires WordPress REST API credentials (URL, username, password) to be set in the state. Example:
  * 
+ * ```typescript
+ * crew.state.set('env', {
+ *   WORDPRESS_URL: 'your_wordpress_url',
+ *   WORDPRESS_USERNAME: 'your_username',
+ *   WORDPRESS_PASSWORD: 'your_application_password'
+ * });
  */
 export class WordPressPost {
   private state: any;
