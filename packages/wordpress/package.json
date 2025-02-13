@@ -1,6 +1,6 @@
 {
   "name": "@ax-crew/tools-wordpress",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "dist/packages/wordpress/src/index.js",
   "types": "dist/packages/wordpress/src/index.d.ts",
   "files": [
