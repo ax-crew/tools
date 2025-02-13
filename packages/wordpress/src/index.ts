@@ -2,6 +2,13 @@ import type { AxFunction } from '@ax-llm/ax';
 import fetch from 'node-fetch';
 import https from 'https';
 
+/**
+ * WordPress post creation functionality for AxCrew.
+ * Allows creating and publishing posts to a WordPress site via the WordPress REST API.
+ * 
+ * @requires WordPress REST API credentials (URL, username, password) in environment variables
+ * 
+ */
 export class WordPressPost {
   private state: any;
 
@@ -9,6 +16,20 @@ export class WordPressPost {
     this.state = state;
   }
 
+  /**
+   * Creates a function that posts content to WordPress.
+   * @returns {AxFunction} A function that creates a new WordPress post
+   * 
+   * @example
+   * ```typescript
+   * const result = await PostToWordPress({
+   *   title: "My Blog Post",
+   *   content: "<p>Hello World!</p>",
+   *   status: "draft" // or "publish"
+   * });
+   * // Returns: { id: 123, url: "https://mysite.com/post", status: "draft" }
+   * ```
+   */
   toFunction(): AxFunction {
     return {
       name: 'PostToWordPress',

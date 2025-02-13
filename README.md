@@ -1,60 +1,79 @@
 # AxCrew Tools
 
-[AxCrew](https://github.com/amitdeshmukh/ax-crew) is a framework for building and managing teams of AI agents powered by [AxLLM](https://axllm.dev). It allows you to define agent behaviors and interactions through simple configuration files, making it easy to create complex multi-agent systems.
+[AxCrew](https://github.com/amitdeshmukh/ax-crew) is a framework for building and managing teams of AI agents powered by [AxLLM](https://axllm.dev). This repository contains official tools and integrations that extend AxCrew's capabilities, allowing agents to interact with various external services.
 
-This repository contains tools that extend the capabilities of AxCrew.
+## 🚀 Features
 
-## Installation
+- **Gmail Integration**: Search, send, and manage emails programmatically
+- **Google Drive Integration**: File management and search capabilities
+- **WordPress Integration**: Content management and site administration
+- **Extensible Architecture**: Easy to add new integrations and tools
+
+## 📦 Installation
+
+Install individual packages based on your needs:
 
 ```bash
-npm install @ax-crew/tools-gmail @ax-crew/tools-drive ...
+# Install specific tools
+npm install @ax-crew/tools-google
+npm install @ax-crew/tools-wordpress
+
 ```
 
-## Available Tools
+## 🛠️ Available Tools
 
-### Gmail
+### Google (`@ax-crew/tools-google`)
+Powerful Google API integration enabling agents to:
+- Search and filter emails
+- Send and reply to messages
 
-The `@ax-crew/tools-gmail` package provides a Gmail API integration for AxCrew. It allows you to search and send emails using the Gmail API.
 
-### Google Drive
+### WordPress (`@ax-crew/tools-wordpress`)
+WordPress site management featuring:
+- Content publishing
 
-The `@ax-crew/tools-drive` package provides a Google Drive API integration for AxCrew. It allows you to search and manage files in Google Drive.
+## 🧑‍💻 Development
 
-## Development
+This project uses a monorepo structure managed with npm workspaces. Each tool is maintained as a separate package in the `packages/` directory.
 
-This repository uses a monorepo structure with individual packages in the `packages/` directory.
+### Contributing
 
-### Publishing Packages
-
-To publish the packages:
-
-1. Ensure you have an NPM account and are logged in:
+1. Fork the repository
+2. Create a feature branch
 ```bash
-npm login
+git checkout -b feature/amazing-feature
 ```
+3. Commit your changes
+```bash
+git commit -m 'Add amazing feature'
+```
+4. Push to your branch
+```bash
+git push origin feature/amazing-feature
+```
+5. Open a Pull Request
 
-2. For each package you want to publish:
+### Publishing
+
+#### Individual Packages
 ```bash
 cd packages/<package-name>
-npm version patch  # or minor/major as needed
+npm version patch  # or minor/major
 npm publish --access public
 ```
 
-For example, to publish the Gmail package:
+#### All Packages
 ```bash
-cd packages/google
-npm version patch
-npm publish --access public
-```
-
-### Publishing All Packages
-
-Using npm workspaces, you can publish all packages at once:
-
-```bash
-# Using npm workspaces
 npm run publish-packages
 ```
 
-Note: Make sure each package has a unique name in its `package.json` and all dependencies are properly listed.
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Support (TODO)
+
+- Documentation: [docs.axcrew.dev](https://docs.axcrew.dev)
+- Issues: [GitHub Issues](https://github.com/ax-crew/tools/issues)
+- Discussions: [GitHub Discussions](https://github.com/ax-crew/tools/discussions)
 

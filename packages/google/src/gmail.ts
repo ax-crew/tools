@@ -2,6 +2,12 @@ import type { AxFunction } from '@ax-llm/ax';
 import { gmail } from '@googleapis/gmail';
 import { google } from 'googleapis';
 
+/**
+ * Gmail search functionality for AxCrew.
+ * Enables searching through Gmail messages using Gmail's search query syntax.
+ * 
+ * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) in environment variables 
+ */
 export class GmailSearch {
   private state: any;
 
@@ -9,6 +15,18 @@ export class GmailSearch {
     this.state = state;
   }
 
+  /**
+   * Creates a function that searches Gmail emails.
+   * @returns {AxFunction} A function that searches Gmail using query strings
+   * 
+   * @example
+   * ```typescript
+   * const results = await GmailSearch({
+   *   query: "from:john@example.com is:unread"
+   * });
+   * // Returns matching email messages
+   * ```
+   */
   toFunction(): AxFunction {
     return {
       name: 'GmailSearch',
@@ -61,6 +79,18 @@ export class GmailSearch {
   }
 }
 
+/**
+ * Gmail email sending functionality for AxCrew.
+ * Enables sending emails through Gmail using OAuth2 authentication.
+ * 
+ * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) in environment variables
+ * 
+ * @example
+ * ```typescript
+ * const gmailSend = new GmailSend(state);
+ * const sendFunction = gmailSend.toFunction();
+ * ```
+ */
 export class GmailSend {
   private state: any;
 
@@ -68,6 +98,20 @@ export class GmailSend {
     this.state = state;
   }
 
+  /**
+   * Creates a function that sends emails through Gmail.
+   * @returns {AxFunction} A function that sends emails via Gmail
+   * 
+   * @example
+   * ```typescript
+   * const result = await GmailSend({
+   *   from: "me@example.com",
+   *   to: "recipient@example.com",
+   *   subject: "Hello",
+   *   body: "Message content"
+   * });
+   * ```
+   */
   toFunction(): AxFunction {
     return {
       name: 'GmailSend',
