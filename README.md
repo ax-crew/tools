@@ -1,41 +1,36 @@
 # AxCrew Tools
 
-[AxCrew](https://github.com/amitdeshmukh/ax-crew) is a framework for building and managing teams of AI agents powered by [AxLLM](https://axllm.dev). This repository contains official tools and integrations that extend AxCrew's capabilities, allowing agents to interact with various external services.
+A collection of ready-to-use tools that help AI agents interact with popular services like Gmail, Google Drive, and WordPress. These tools are designed to work with [AxCrew](https://github.com/amitdeshmukh/ax-crew) and [AxLLM](https://axllm.dev) frameworks.
 
-- The tools are published as separate npm packages and can be installed individually.
-- All tools are compatible with [AxCrew](https://github.com/amitdeshmukh/ax-crew) as well as [AxLLM](https://axllm.dev).
+## What does it do?
 
-## 🚀 Features
+These tools let your AI agents:
+- Read and send emails through Gmail
+- Manage files in Google Drive
+- Create and manage WordPress content
+- And more...
 
-- **Gmail Integration**: Search, send, and manage emails programmatically
-- **Google Drive Integration**: File management and search capabilities
-- **WordPress Integration**: Content management and site administration
-- **Extensible Architecture**: Easy to add new integrations and tools
-- **Configuration**: All tools define a configuration interface that can be used to configure the tool.
+Think of it as giving your AI agents the ability to interact with real-world services, just like a human would.
 
-## 📦 Installation
+## Quick Start
 
-Install individual packages based on your needs:
-
+1. Install the tools you need:
 ```bash
-# Install specific tools
+# For Google services (Gmail, Drive)
 npm install @ax-crew/tools-google
-npm install @ax-crew/tools-wordpress
 
+# For WordPress
+npm install @ax-crew/tools-wordpress
 ```
 
-## 🛠️ Available Tools
-
-### Google (`@ax-crew/tools-google`)
-Powerful Google API integration enabling agents to:
-- Search and filter emails
-- Send and reply to messages
-- Search and manage Drive files
+2. Set up your tools with AxCrew:
 
 ```typescript
-import { GmailSearch, GmailConfig } from '@ax-crew/tools-google';
+import { GmailSearch, GmailSend, DriveSearch } from '@ax-crew/tools-google';
+import { AxCrew } from 'ax-crew';
 
-const config: GmailConfig = {
+// Configure Google services
+const googleConfig = {
   credentials: {
     clientId: 'your_client_id',
     clientSecret: 'your_client_secret',
@@ -44,70 +39,114 @@ const config: GmailConfig = {
   }
 };
 
-const gmailSearch = new GmailSearch(config);
+// Create service instances
+const gmailSearch = new GmailSearch(googleConfig);
+const gmailSend = new GmailSend(googleConfig);
+const driveSearch = new DriveSearch(googleConfig);
+
+// Register with AxCrew
+const googleFunctions = {
+  GmailSearch: gmailSearch.toFunction(),
+  GmailSend: gmailSend.toFunction(),
+  DriveSearch: driveSearch.toFunction()
+};
+
+// Your AxCrew configuration
+const crew = new AxCrew(AxCrewConfig, googleFunctions);
 ```
 
-### WordPress (`@ax-crew/tools-wordpress`)
-WordPress site management featuring:
-- Content publishing and management
-- Post creation with full HTML support
-
 ```typescript
-import { WordPressPost, WordPressConfig } from '@ax-crew/tools-wordpress';
+import { WordPressPost } from '@ax-crew/tools-wordpress';
+import { AxCrew } from 'ax-crew';
 
-const config: WordPressConfig = {
+// Configure WordPress
+const wordPressConfig = {
   credentials: {
-    url: 'your_wordpress_url',
+    url: 'https://your-site.com',
     username: 'your_username',
-    password: 'your_application_password'
+    password: 'your_application_password'  // Use application passwords, not your login password!
   }
 };
 
-const wordPressPost = new WordPressPost(config);
+// Create WordPress instance
+const wordPressPost = new WordPressPost(wordPressConfig);
+
+// Register with AxCrew
+const wordPressFunctions = {
+  WordPressPost: wordPressPost.toFunction()
+};
+
+// Your AxCrew configuration
+const crew = new AxCrew(AxCrewConfig, wordPressFunctions);
 ```
 
-## 🧑‍💻 Development
+3. Use the tools with AxLLM agents
 
-This project uses a monorepo structure managed with npm workspaces. Each tool is maintained as a separate package in the `packages/` directory.
+```typescript
+const ai = new AxAI({
+    name: 'openai',
+    apiKey: process.env['OPENAI_APIKEY'] ?? "",
+});
 
-### Contributing
+// Create a model using the provider
+const model = new AxAIProvider(ai);
 
-1. Fork the repository
-2. Create a feature branch
+const functions = [
+  GmailSearch.toFunction()
+]
+
+export const gmailSearchAgent = new AxAgent({
+  name: 'gmail-search',
+  description:
+    'Use this agent to search for emails',
+  signature: `searchQuery: string -> emailList: string[] "A list of emails that match the search query"`,
+  functions
+})
+```
+
+## Available Tools
+
+### @ax-crew/tools-google
+- **Gmail**
+  - Search emails by any criteria
+  - Send new emails
+  - Reply to threads
+  - Manage labels and folders
+- **Google Drive**
+  - Search files
+  - Upload/download files
+  - Manage file permissions
+  - Create/delete folders
+
+### @ax-crew/tools-wordpress
+- Post content to WordPress
+- See `wordpress-example.ts` in the [examples](examples) folder
+
+## Getting Help
+
+- 📚 [Full Documentation](https://docs.axcrew.dev)
+- 🐛 [Report Issues](https://github.com/ax-crew/tools/issues)
+- 💬 [Ask Questions](https://github.com/ax-crew/tools/discussions)
+
+## For Contributors
+
+We use a monorepo structure with npm workspaces. Each tool lives in its own package under `packages/`.
+
 ```bash
-git checkout -b feature/amazing-feature
-```
-3. Commit your changes
-```bash
-git commit -m 'Add amazing feature'
-```
-4. Push to your branch
-```bash
-git push origin feature/amazing-feature
-```
-5. Open a Pull Request
+# Clone and setup
+git clone https://github.com/ax-crew/tools.git
+cd tools
+npm install
 
-### Publishing
-
-#### Individual Packages
-```bash
-cd packages/<package-name>
-npm version patch  # or minor/major
-npm publish --access public
+# Create a new feature
+git checkout -b feature/your-feature
+# Make your changes
+git commit -m 'Add awesome feature'
+git push origin feature/your-feature
+# Open a Pull Request
 ```
 
-#### All Packages
-```bash
-npm run publish-packages
-```
+## License
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Support
-
-- Documentation: [docs.axcrew.dev](https://docs.axcrew.dev)
-- Issues: [GitHub Issues](https://github.com/ax-crew/tools/issues)
-- Discussions: [GitHub Discussions](https://github.com/ax-crew/tools/discussions)
+MIT - feel free to use in your projects! See [LICENSE](LICENSE) for details.
 
