@@ -3,24 +3,32 @@
 WordPress integration for AxCrew agents, enabling automated content management and site administration.
 
 ## Installation
+First ensure you have the [Basic Auth plugin](https://github.com/WP-API/Basic-Auth) installed on your WordPress site. Then install the package:
 
 ```bash
 npm install @ax-crew/tools-wordpress
 ```
 
-## Features
+## Usage
 
 ```typescript
-import { WordPressPost } from '@ax-crew/tools-wordpress';
-```
+import { WordPressPost, WordPressConfig } from '@ax-crew/tools-wordpress';
 
-### Configuration
+// Configure WordPress credentials
+const config: WordPressConfig = {
+  credentials: {
+    url: 'your_wordpress_url',
+    username: 'your_username',
+    password: 'your_application_password'
+  }
+};
 
-Add the following environment variables to your AxCrew state. For example:
-```typescript
-crew.state.set('env', {
-  WORDPRESS_URL: 'your_wordpress_url',
-  WORDPRESS_USERNAME: 'your_username',
-  WORDPRESS_PASSWORD: 'your_application_password'
-});
+// Create WordPress instance
+const wordPressPost = new WordPressPost(config);
+
+// Register with AxCrew
+const customFunctions = {
+  WordPressPost: wordPressPost.toFunction()
+};
+const crew = new AxCrew(AxCrewConfig, customFunctions);
 ```

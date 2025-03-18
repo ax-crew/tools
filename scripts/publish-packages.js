@@ -1,17 +1,26 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const PACKAGES_DIR = path.join(__dirname, '..', 'packages');
 
-function getPackages() {
-  return fs.readdirSync(PACKAGES_DIR)
-    .filter(file => fs.statSync(path.join(PACKAGES_DIR, file)).isDirectory())
-    .map(dir => ({
-      name: dir,
-      path: path.join(PACKAGES_DIR, dir),
-      pkg: require(path.join(PACKAGES_DIR, dir, 'package.json'))
-    }));
+async function getPackages() {
+  return Promise.all(
+    fs.readdirSync(PACKAGES_DIR)
+      .filter(file => {
+        const dirPath = path.join(PACKAGES_DIR, file);
+        const packageJsonPath = path.join(dirPath, 'package.json');
+        return fs.statSync(dirPath).isDirectory() && fs.existsSync(packageJsonPath);
+      })
+      .map(async dir => ({
+        name: dir,
+        path: path.join(PACKAGES_DIR, dir),
+        pkg: JSON.parse(fs.readFileSync(path.join(PACKAGES_DIR, dir, 'package.json'), 'utf8'))
+      }))
+  );
 }
 
 function publishPackage(packagePath) {
@@ -22,8 +31,8 @@ function publishPackage(packagePath) {
       stdio: 'inherit'
     });
 
-    // Publish package
-    execSync('npm publish --access public', {
+    // Publish package with legacy peer deps flag
+    execSync('npm publish --access public --legacy-peer-deps', {
       cwd: packagePath,
       stdio: 'inherit'
     });
@@ -44,7 +53,7 @@ async function main() {
     process.exit(1);
   }
 
-  const packages = getPackages();
+  const packages = await getPackages();
   console.log('Publishing packages:', packages.map(p => p.name).join(', '));
 
   let success = true;
@@ -67,4 +76,4 @@ async function main() {
 main().catch(error => {
   console.error('Unexpected error:', error);
   process.exit(1);
-}); 
+});

@@ -13,17 +13,50 @@ npm install @ax-crew/tools-google
 ### Gmail Integration
 
 ```typescript
-import { GmailSearch, GmailSend } from '@ax-crew/tools-google';
+import { GmailSearch, GmailSend, GmailConfig } from '@ax-crew/tools-google';
+
+// Configure Gmail credentials
+const config: GmailConfig = {
+  credentials: {
+    clientId: 'your_client_id',
+    clientSecret: 'your_client_secret',
+    redirectUri: 'your_redirect_uri',
+    refreshToken: 'your_refresh_token'
+  }
+};
+
+// Create Gmail instances
+const gmailSearch = new GmailSearch(config);
+const gmailSend = new GmailSend(config);
+
+// Register with AxCrew
+const customFunctions = {
+  GmailSearch: gmailSearch.toFunction(),
+  GmailSend: gmailSend.toFunction()
+};
 ```
 
-### Configuration
+### Google Drive Integration
 
-Add the following environment variables to your AxCrew state. For example:
 ```typescript
-crew.state.set('env', {
-  GMAIL_CLIENT_ID: 'your_client_id',
-  GMAIL_CLIENT_SECRET: 'your_client_secret',
-  GMAIL_REDIRECT_URI: 'your_redirect_uri',
-  GMAIL_REFRESH_TOKEN: 'your_refresh_token'
-});
+import { DriveSearch, DriveConfig } from '@ax-crew/tools-google';
+
+// Configure Drive credentials
+const config: DriveConfig = {
+  credentials: {
+    clientId: 'your_client_id',
+    clientSecret: 'your_client_secret',
+    redirectUri: 'your_redirect_uri',
+    refreshToken: 'your_refresh_token'
+  }
+};
+
+// Create Drive instance
+const driveSearch = new DriveSearch(config);
+
+// Register with AxCrew
+const customFunctions = {
+  DriveSearch: driveSearch.toFunction()
+};
+const crew = new AxCrew(AxCrewConfig, customFunctions);
 ```
