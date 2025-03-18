@@ -7,6 +7,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src/**/*", "../../packages/common/src/**/*"],
+  "include": ["src/**/*", "../../packages/core/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

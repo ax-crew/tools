@@ -1,39 +1,35 @@
 import type { AxFunction } from '@ax-llm/ax';
 import { gmail } from '@googleapis/gmail';
 import { google } from 'googleapis';
+import type { GmailConfig } from './types';
 
 /**
  * Gmail search functionality for AxCrew.
  * Enables searching through Gmail messages using Gmail's search query syntax.
  * 
- * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) to be set in the state. Example:
- * 
+ * @example Configuration:
  * ```typescript
- * crew.state.set('env', {
- *   GMAIL_CLIENT_ID: 'your_client_id',
- *   GMAIL_CLIENT_SECRET: 'your_client_secret',
- *   GMAIL_REDIRECT_URI: 'your_redirect_uri',
- *   GMAIL_REFRESH_TOKEN: 'your_refresh_token'
- * });
+ * const config: GmailConfig = {
+ *   credentials: {
+ *     clientId: 'your_client_id',
+ *     clientSecret: 'your_client_secret',
+ *     redirectUri: 'your_redirect_uri',
+ *     refreshToken: 'your_refresh_token'
+ *   }
+ * };
+ * const gmailSearch = new GmailSearch(config);
+ * ```
  */
 export class GmailSearch {
-  private state: any;
+  private config: GmailConfig;
 
-  constructor(state: any) {
-    this.state = state;
+  constructor(config: GmailConfig) {
+    this.config = config;
   }
 
   /**
    * Creates a function that searches Gmail emails.
    * @returns {AxFunction} A function that searches Gmail using query strings
-   * 
-   * @example
-   * ```typescript
-   * const results = await GmailSearch({
-   *   query: "from:john@example.com is:unread"
-   * });
-   * // Returns matching email messages
-   * ```
    */
   toFunction(): AxFunction {
     return {
@@ -50,16 +46,7 @@ export class GmailSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        const env = this.state.get('env');
-        
-        const clientId = env?.GMAIL_CLIENT_ID;
-        const clientSecret = env?.GMAIL_CLIENT_SECRET;
-        const redirectUri = env?.GMAIL_REDIRECT_URI;
-        const refreshToken = env?.GMAIL_REFRESH_TOKEN;
-                
-        if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
-          throw new Error(`Missing required Gmail credentials in environment variables. Please provide GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, and GMAIL_REFRESH_TOKEN. Got clientId: ${clientId}, clientSecret: ${clientSecret}, redirectUri: ${redirectUri}, refreshToken: ${refreshToken}`);
-        }
+        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
 
         const auth = new google.auth.OAuth2(
           clientId,
@@ -91,35 +78,26 @@ export class GmailSearch {
  * Gmail email sending functionality for AxCrew.
  * Enables sending emails through Gmail using OAuth2 authentication.
  * 
- * @requires Gmail OAuth2 credentials (client ID, client secret, redirect URI, refresh token) in environment variables
- * 
- * @example
+ * @example Configuration:
  * ```typescript
- * const gmailSend = new GmailSend(state);
- * const sendFunction = gmailSend.toFunction();
+ * const config: GmailConfig = {
+ *   credentials: {
+ *     clientId: 'your_client_id',
+ *     clientSecret: 'your_client_secret',
+ *     redirectUri: 'your_redirect_uri',
+ *     refreshToken: 'your_refresh_token'
+ *   }
+ * };
+ * const gmailSend = new GmailSend(config);
  * ```
  */
 export class GmailSend {
-  private state: any;
+  private config: GmailConfig;
 
-  constructor(state: any) {
-    this.state = state;
+  constructor(config: GmailConfig) {
+    this.config = config;
   }
 
-  /**
-   * Creates a function that sends emails through Gmail.
-   * @returns {AxFunction} A function that sends emails via Gmail
-   * 
-   * @example
-   * ```typescript
-   * const result = await GmailSend({
-   *   from: "me@example.com",
-   *   to: "recipient@example.com",
-   *   subject: "Hello",
-   *   body: "Message content"
-   * });
-   * ```
-   */
   toFunction(): AxFunction {
     return {
       name: 'GmailSend',
@@ -147,17 +125,7 @@ export class GmailSend {
         required: ['from', 'to', 'subject', 'body']
       },
       func: async ({ from, to, subject, body }) => {
-        // Use state.get() to retrieve env values
-        const env = this.state.get('env');
-        
-        const clientId = env?.GMAIL_CLIENT_ID;
-        const clientSecret = env?.GMAIL_CLIENT_SECRET;
-        const redirectUri = env?.GMAIL_REDIRECT_URI;
-        const refreshToken = env?.GMAIL_REFRESH_TOKEN;
-        
-        if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
-          throw new Error(`Missing required Gmail credentials in environment variables. Please provide GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REDIRECT_URI, and GMAIL_REFRESH_TOKEN. Got clientId: ${clientId}, clientSecret: ${clientSecret}, redirectUri: ${redirectUri}, refreshToken: ${refreshToken}`);
-        }
+        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
 
         const auth = new google.auth.OAuth2(
           clientId,
@@ -174,7 +142,6 @@ export class GmailSend {
           auth
         });
         
-        // Helper function to create a MIME compliant email (RFC 2822)
         function createEmail(from: string, to: string, subject: string, messageText: string): string {
           const emailLines = [
             `From: ${from}`,
@@ -188,10 +155,7 @@ export class GmailSend {
           return emailLines.join('\r\n');
         }
         
-        // Build the raw email message
         const rawEmail = createEmail(from, to, subject, body);
-
-        // Encode the raw email to base64 and convert to base64url format.
         const encodedEmail = Buffer.from(rawEmail)
           .toString('base64')
           .replace(/\+/g, '-')

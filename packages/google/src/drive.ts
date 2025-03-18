@@ -1,30 +1,39 @@
 import type { AxFunction } from '@ax-llm/ax';
-import { drive } from '@googleapis/drive';
 import { google } from 'googleapis';
-import type { Config } from '../../common/src/config';
+import type { DriveConfig } from './types';
 
-export interface DriveConfig extends Config {
-  credentials: {
-    clientId: string;
-    clientSecret: string;
-    redirectUri: string;
-    refreshToken: string;
-  };
-}
-
+/**
+ * Google Drive search functionality for AxCrew.
+ * Enables searching through Drive files using Drive's search query syntax.
+ * 
+ * @example Configuration:
+ * ```typescript
+ * const config: DriveConfig = {
+ *   credentials: {
+ *     clientId: 'your_client_id',
+ *     clientSecret: 'your_client_secret',
+ *     redirectUri: 'your_redirect_uri',
+ *     refreshToken: 'your_refresh_token'
+ *   }
+ * };
+ * const driveSearch = new DriveSearch(config);
+ * ```
+ */
 export class DriveSearch {
   private config: DriveConfig;
-  private state: any;
 
-  constructor(config: DriveConfig, state: any) {
+  constructor(config: DriveConfig) {
     this.config = config;
-    this.state = state;
   }
 
+  /**
+   * Creates a function that searches Google Drive files.
+   * @returns {AxFunction} A function that searches Drive using query strings
+   */
   toFunction(): AxFunction {
     return {
       name: 'DriveSearch',
-      description: 'Search Google Drive files',
+      description: 'Search Google Drive files using Drive query syntax. For example, "name contains \'budget\'" or "mimeType = \'application/pdf\'" or "modifiedTime > \'2024-01-01\'".',
       parameters: {
         type: 'object',
         properties: {
@@ -36,15 +45,7 @@ export class DriveSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        // Resolve credentials: use values from config; fallback to state.env if missing.
-        const clientId = this.config.credentials.clientId || (this.state?.env && this.state.env.DRIVE_CLIENT_ID);
-        const clientSecret = this.config.credentials.clientSecret || (this.state?.env && this.state.env.DRIVE_CLIENT_SECRET);
-        const redirectUri = this.config.credentials.redirectUri || (this.state?.env && this.state.env.DRIVE_REDIRECT_URI);
-        const refreshToken = this.config.credentials.refreshToken || (this.state?.env && this.state.env.DRIVE_REFRESH_TOKEN);
-        
-        if (!clientId || !clientSecret || !redirectUri || !refreshToken) {
-          throw new Error("Missing required Drive credentials. Please provide clientId, clientSecret, redirectUri, and refreshToken either in the config or in state.env (expected keys: DRIVE_CLIENT_ID, DRIVE_CLIENT_SECRET, DRIVE_REDIRECT_URI, DRIVE_REFRESH_TOKEN).");
-        }
+        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
 
         const auth = new google.auth.OAuth2(
           clientId,
@@ -63,7 +64,7 @@ export class DriveSearch {
         
         const response = await driveClient.files.list({
           q: query,
-          fields: 'files(id, name, mimeType, webViewLink)'
+          fields: 'files(id, name, mimeType, webViewLink, modifiedTime, size)'
         });
 
         return response.data;
