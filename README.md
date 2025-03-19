@@ -14,7 +14,7 @@ Think of it as giving your AI agents the ability to interact with real-world ser
 
 ## Quick Start
 
-1. Install the tools you need:
+#### 1. Install the tools you need:
 ```bash
 # For Google services (Gmail, Drive)
 npm install @ax-crew/tools-google
@@ -23,7 +23,7 @@ npm install @ax-crew/tools-google
 npm install @ax-crew/tools-wordpress
 ```
 
-2. Set up your tools with AxCrew:
+#### 2. Set up your tools with AxCrew:
 
 ```typescript
 import { GmailSearch, GmailSend, DriveSearch } from '@ax-crew/tools-google';
@@ -80,7 +80,7 @@ const wordPressFunctions = {
 const crew = new AxCrew(AxCrewConfig, wordPressFunctions);
 ```
 
-3. Use the tools with AxLLM agents
+#### 3. Use the tools with AxLLM agents
 
 ```typescript
 const ai = new AxAI({
