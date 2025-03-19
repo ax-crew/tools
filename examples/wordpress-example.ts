@@ -39,13 +39,15 @@ const config = {
       provider: "google-gemini",
       providerKeyName: "GEMINI_API_KEY",
       ai: {
-        model: "gemini-2.0-flash",
+        model: "gemini-1.5-pro",
         temperature: 0
       },
       options: {
         debug: true,
         stream: false,
-        googleSearch: true
+        googleSearchRetrieval: {
+          mode: "MODE_UNSPECIFIED",
+        }
       }
     },
     {
