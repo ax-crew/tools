@@ -2,18 +2,6 @@ import { AxCrew } from "@amitdeshmukh/ax-crew";
 import type { FunctionRegistryType } from "@amitdeshmukh/ax-crew";
 import { WordPressPost, WordPressConfig } from "@ax-crew/tools-wordpress";
 
-// WordPress configuration
-const wpConfig: WordPressConfig = {
-  credentials: {
-    url: "https://your-wordpress-site.com",
-    username: "your-username",
-    password: "your-password"
-  }
-};
-
-// Create WordPress instance with configuration
-const wordPressPost = new WordPressPost(wpConfig);
-
 // AxCrew configuration
 const config = {
   crew: [
@@ -79,69 +67,70 @@ const config = {
         debug: true,
         stream: false
       },
-      functions: ["WordPressPost"]
+      functions: ["postToWordPress"]
     }
   ]
+};
+
+const wordpressConfig: WordPressConfig = {
+  credentials: {
+    url: "https://your-wordpress-site.com",
+    username: "your-username",
+    password: "your-password"
+  }
 };
 
 const main = async () => {
   // Create crew with a pre-configured WordPress function
   const customFunctions: FunctionRegistryType = {
-    WordPressPost: wordPressPost.toFunction()
+    postToWordPress: new WordPressPost(wordpressConfig).toFunction()
   };
   const crew = new AxCrew(config, customFunctions);
 
   // Add agents to crew
   const agents = crew.addAgentsToCrew([
-    'SearchQueryGenerator',
-    'GoogleSearch',
-    'BlogPostWriter',
+    'SearchQueryGenerator', 
+    'GoogleSearch', 
+    'BlogPostWriter', 
     'WordPressPoster'
   ]);
 
-  if (!agents) {
-    throw new Error('Failed to initialize agents');
-  }
-
   // Get agents from crew
-  const planner = agents.get('SearchQueryGenerator');
-  const googleSearch = agents.get('GoogleSearch');
-  const writer = agents.get('BlogPostWriter');
-  const poster = agents.get('WordPressPoster');
-
-  // Verify all required agents are available
-  if (!planner || !googleSearch || !writer || !poster) {
-    throw new Error('Failed to get required agents. Please check agent configuration.');
-  }
+  const planner = agents?.get('SearchQueryGenerator');
+  const googleSearch = agents?.get('GoogleSearch');
+  const writer = agents?.get('BlogPostWriter');
+  const poster = agents?.get('WordPressPoster');
 
   // Define the topic and guidance
-  const topic = "How to tell what your dog is thinking";
-  const guidance = "The article should be a fun and engaging article and less that 500 words long. It should help the reader to understand their dog better.";
+  const topic = "How to interpret your cat's tail signals";
+  const guidance = "The article should be a fun and engaging article and less that 500 words long. It should be about how to interpret your cat's tail signals.";
 
-  // Generate search queries
-  const plannerResponse = await planner.forward({ topic, guidance });
-  const { googleSearchQueries } = plannerResponse;
+  if (planner && googleSearch && writer && poster) {
+    // Generate search queries
+    const plannerResponse = await planner.forward({ topic, guidance });
+    const { googleSearchQueries } = plannerResponse;
 
-  // Research the topic
-  const googleSearchResults: string[] = [];
-  for (const query of googleSearchQueries) {
-    const googleSearchResponse = await googleSearch.forward({ googleSearchQuery: query });
-    const { googleSearchResult } = googleSearchResponse;
-    googleSearchResults.push(googleSearchResult);
-    // Wait for 3 seconds between queries to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 3000));
-  }
+    // Research the topic
+    const googleSearchResults: string[] = [];
+    for (const query of googleSearchQueries) {
+      const googleSearchResponse = await googleSearch.forward({ googleSearchQuery: query });
+      const { googleSearchResult } = googleSearchResponse;
+      googleSearchResults.push(googleSearchResult);
+      // Wait for 3 seconds between queries to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
 
-  // Write the blog post
-  const writerResponse = await writer.forward({ topic, guidance, googleSearchResults });
-  const { blogPostTitle, blogPostContent } = writerResponse;
+    // Write the blog post
+    const writerResponse = await writer.forward({ topic, guidance, googleSearchResults });
+    const { blogPostTitle, blogPostContent } = writerResponse;
 
-  // Post to WordPress
-  try {
-    const postResponse = await poster.forward({ blogPostTitle, blogPostContent, status: "publish" });
-    console.log('Successfully posted to WordPress:', postResponse);
-  } catch (error) {
-    console.error('Failed to post to WordPress:', error);
+    // Post to WordPress
+    try {
+      const postResponse = await poster.forward({ blogPostTitle, blogPostContent, status: "publish" });
+      console.log('Successfully posted to WordPress:', postResponse);
+    } catch (error) {
+      console.error('Failed to post to WordPress:', error);
+    }
   }
 }
 
