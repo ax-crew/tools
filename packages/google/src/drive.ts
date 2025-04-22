@@ -101,17 +101,12 @@ export class ListDriveFiles {
         const { accessToken, googleServiceApiUrl } = this.config;
 
         try {
-          const response = await fetch(`${googleServiceApiUrl}/drive/v3/files`, {
+          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)',
-              pageSize: 100,
-              orderBy: 'modifiedTime desc'
-            })
+            }
           });
 
           if (!response.ok) {
