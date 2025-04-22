@@ -1,7 +1,5 @@
 import type { AxFunction } from '@ax-llm/ax';
-import { gmail } from '@googleapis/gmail';
-import { google } from 'googleapis';
-import type { GmailConfig } from './types';
+import type { GoogleServiceConfig } from './types';
 
 /**
  * Gmail search functionality for AxCrew.
@@ -9,11 +7,9 @@ import type { GmailConfig } from './types';
  * 
  * @example Configuration:
  * ```typescript
- * const config: GmailConfig = {
+ * const config: GoogleOAuth2Config = {
  *   credentials: {
- *     clientId: 'your_client_id',
- *     clientSecret: 'your_client_secret',
- *     redirectUri: 'your_redirect_uri',
+ *     accessToken: 'your_access_token',
  *     refreshToken: 'your_refresh_token'
  *   }
  * };
@@ -21,10 +17,12 @@ import type { GmailConfig } from './types';
  * ```
  */
 export class GmailSearch {
-  private config: GmailConfig;
+  private config: GoogleServiceConfig;
+  public state: any;
 
-  constructor(config: GmailConfig) {
+  constructor(config: GoogleServiceConfig, state: any) {
     this.config = config;
+    this.state = state;
   }
 
   /**
@@ -34,7 +32,7 @@ export class GmailSearch {
   toFunction(): AxFunction {
     return {
       name: 'GmailSearch',
-      description: `Search Gmail emails using the same query format as Gmail search. For example, "from:john@example.com" or "is:unread" or "label:inbox" or "after:2025/01/01" or a combination of these.`,
+      description: `Search google workspace emails using the Gmail search query format. For example, "from:john@example.com" or "is:unread" or "label:inbox" or "after:2025/01/01" or a combination of these.`,
       parameters: {
         type: 'object',
         properties: {
@@ -46,29 +44,43 @@ export class GmailSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
+        const { accessToken, refreshToken } = this.config.credentials;
+        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
 
-        const auth = new google.auth.OAuth2(
-          clientId,
-          clientSecret,
-          redirectUri
-        );
+        if (!googleServiceApiUrl) {
+          throw new Error('Google service API URL not configured in your crew state');
+        }
 
-        auth.setCredentials({
-          refresh_token: refreshToken
-        });
+        if (!accessToken) {
+          throw new Error('Google service Access token is not configured');
+        }
 
-        const gmailClient = gmail({
-          version: 'v1',
-          auth
-        });
-        
-        const response = await gmailClient.users.messages.list({
-          userId: 'me',
-          q: query
-        });
+        try {
+          const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/search`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ q: query })
+          });
 
-        return response.data;
+          if (!response.ok) {
+            throw new Error(`Gmail search failed: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return {
+            success: true,
+            messages: data.messages || [],
+            resultSizeEstimate: data.resultSizeEstimate || 0
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
+        }
       }
     };
   }
@@ -80,11 +92,9 @@ export class GmailSearch {
  * 
  * @example Configuration:
  * ```typescript
- * const config: GmailConfig = {
+ * const config: GoogleOAuth2Config = {
  *   credentials: {
- *     clientId: 'your_client_id',
- *     clientSecret: 'your_client_secret',
- *     redirectUri: 'your_redirect_uri',
+ *     accessToken: 'your_access_token',
  *     refreshToken: 'your_refresh_token'
  *   }
  * };
@@ -92,10 +102,12 @@ export class GmailSearch {
  * ```
  */
 export class GmailSend {
-  private config: GmailConfig;
+  private config: GoogleServiceConfig;
+  public state: any;
 
-  constructor(config: GmailConfig) {
+  constructor(config: GoogleServiceConfig, state: any) {
     this.config = config;
+    this.state = state;
   }
 
   toFunction(): AxFunction {
@@ -125,22 +137,8 @@ export class GmailSend {
         required: ['from', 'to', 'subject', 'body']
       },
       func: async ({ from, to, subject, body }) => {
-        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
-
-        const auth = new google.auth.OAuth2(
-          clientId,
-          clientSecret,
-          redirectUri
-        );
-
-        auth.setCredentials({
-          refresh_token: refreshToken
-        });
-
-        const gmailClient = gmail({
-          version: 'v1',
-          auth
-        });
+        const { refreshToken } = this.config.credentials;
+        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
         
         function createEmail(from: string, to: string, subject: string, messageText: string): string {
           const emailLines = [
@@ -162,14 +160,35 @@ export class GmailSend {
           .replace(/\//g, '_')
           .replace(/=+$/, '');
 
-        const response = await gmailClient.users.messages.send({
-          userId: 'me',
-          requestBody: {
-            raw: encodedEmail
+        try {
+          const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/send`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${refreshToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              raw: encodedEmail
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to send email: ${response.statusText}`);
           }
-        });
-        
-        return response.data;
+
+          const data = await response.json();
+          return {
+            success: true,
+            messageId: data.id,
+            threadId: data.threadId,
+            labelIds: data.labelIds
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
+        }
       }
     };
   }

@@ -7,7 +7,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "clean": "rimraf dist",
     "prepare": "npm run clean && npm run build"
   },

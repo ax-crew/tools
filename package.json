@@ -30,5 +30,8 @@
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0",
     "semver": "^7.5.4"
+  },
+  "resolutions": {
+    "webpack": "^3.12.0"
   }
 }

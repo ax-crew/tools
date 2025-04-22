@@ -1,6 +1,5 @@
 import type { AxFunction } from '@ax-llm/ax';
-import { google } from 'googleapis';
-import type { DriveConfig } from './types';
+import type { GoogleServiceConfig } from './types';
 
 /**
  * Google Drive search functionality for AxCrew.
@@ -8,11 +7,9 @@ import type { DriveConfig } from './types';
  * 
  * @example Configuration:
  * ```typescript
- * const config: DriveConfig = {
+ * const config: GoogleServiceConfig = {
  *   credentials: {
- *     clientId: 'your_client_id',
- *     clientSecret: 'your_client_secret',
- *     redirectUri: 'your_redirect_uri',
+ *     accessToken: 'your_access_token',
  *     refreshToken: 'your_refresh_token'
  *   }
  * };
@@ -20,10 +17,12 @@ import type { DriveConfig } from './types';
  * ```
  */
 export class DriveSearch {
-  private config: DriveConfig;
+  private config: GoogleServiceConfig;
+  public state: any;
 
-  constructor(config: DriveConfig) {
+  constructor(config: GoogleServiceConfig, state: any) {
     this.config = config;
+    this.state = state;
   }
 
   /**
@@ -45,29 +44,98 @@ export class DriveSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        const { clientId, clientSecret, redirectUri, refreshToken } = this.config.credentials;
+        const { accessToken, refreshToken } = this.config.credentials;
+        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
 
-        const auth = new google.auth.OAuth2(
-          clientId,
-          clientSecret,
-          redirectUri
-        );
+        if (!googleServiceApiUrl) {
+          throw new Error('Google service API URL not configured in your crew state');
+        }
 
-        auth.setCredentials({
-          refresh_token: refreshToken
-        });
+        if (!accessToken) {
+          throw new Error('Google service Access token is not configured');
+        }
 
-        const driveClient = google.drive({
-          version: 'v3',
-          auth
-        });
-        
-        const response = await driveClient.files.list({
-          q: query,
-          fields: 'files(id, name, mimeType, webViewLink, modifiedTime, size)'
-        });
+        try {
+          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              q: query,
+              fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)'
+            })
+          });
 
-        return response.data;
+          if (!response.ok) {
+            throw new Error(`Drive search failed: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return {
+            success: true,
+            files: data.files || [],
+            nextPageToken: data.nextPageToken
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
+        }
+      }
+    };
+  }
+}
+
+export class DriveList {
+  private config: GoogleServiceConfig;
+  public state: any;
+
+  constructor(config: GoogleServiceConfig, state: any) {
+    this.config = config;
+    this.state = state;
+  }
+
+  public toFunction(): AxFunction {
+    return {
+      name: 'DriveList',
+      description: 'List all files in your Google Drive account',
+      func: async () => {
+        const { accessToken } = this.config.credentials;
+        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+
+        try {
+          const response = await fetch(`${googleServiceApiUrl}/drive/v3/files`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)',
+              pageSize: 100,
+              orderBy: 'modifiedTime desc'
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to list Drive files: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return {
+            success: true,
+            files: data.files || [],
+            nextPageToken: data.nextPageToken
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
+        }
       }
     };
   }
