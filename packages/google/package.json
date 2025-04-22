@@ -1,6 +1,6 @@
 {
   "name": "@ax-crew/tools-google",
-  "version": "2.0.1",
+  "version": "2.0.5",
   "main": "dist/packages/google/src/index.js",
   "types": "dist/packages/google/src/index.d.ts",
   "files": [
@@ -23,5 +23,8 @@
     "@types/node": "^18.0.0",
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0"
+  },
+  "resolutions": {
+    "agent-base": "^7.1.3"
   }
 }
