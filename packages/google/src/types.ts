@@ -1,10 +1,7 @@
 import { AxToolBaseConfig } from '../../core/src';
 
-export interface GoogleOAuth2Credentials {
+export interface GoogleServiceConfig extends AxToolBaseConfig {
   accessToken: string;
   refreshToken: string;
-}
-
-export interface GoogleServiceConfig extends AxToolBaseConfig {
-  credentials: GoogleOAuth2Credentials;
+  googleServiceApiUrl: string;
 }

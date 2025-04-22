@@ -20,9 +20,8 @@ export class ListSheets {
   private config: GoogleServiceConfig;
   public state: any;
 
-  constructor(config: GoogleServiceConfig, state: any) {
+  constructor(config: GoogleServiceConfig) {
     this.config = config;
-    this.state = state;
   }
 
   /**
@@ -44,8 +43,7 @@ export class ListSheets {
         required: ['spreadsheet_id']
       },
       func: async ({ spreadsheet_id }) => {
-        const { accessToken } = this.config.credentials;
-        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+        const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
           throw new Error('Google service API URL not configured in your crew state');

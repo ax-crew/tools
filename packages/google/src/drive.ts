@@ -8,21 +8,18 @@ import type { GoogleServiceConfig } from './types';
  * @example Configuration:
  * ```typescript
  * const config: GoogleServiceConfig = {
- *   credentials: {
  *     accessToken: 'your_access_token',
- *     refreshToken: 'your_refresh_token'
- *   }
+ *     refreshToken: 'your_refresh_token',
+ *     googleServiceApiUrl: 'http://localhost:8080'
  * };
  * const driveSearch = new DriveSearch(config);
  * ```
  */
 export class DriveSearch {
   private config: GoogleServiceConfig;
-  public state: any;
 
-  constructor(config: GoogleServiceConfig, state: any) {
+  constructor(config: GoogleServiceConfig) {
     this.config = config;
-    this.state = state;
   }
 
   /**
@@ -44,8 +41,7 @@ export class DriveSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        const { accessToken, refreshToken } = this.config.credentials;
-        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+        const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
           throw new Error('Google service API URL not configured in your crew state');
@@ -89,22 +85,20 @@ export class DriveSearch {
   }
 }
 
-export class DriveList {
+export class ListDriveFiles {
   private config: GoogleServiceConfig;
   public state: any;
 
-  constructor(config: GoogleServiceConfig, state: any) {
+  constructor(config: GoogleServiceConfig) {
     this.config = config;
-    this.state = state;
   }
 
   public toFunction(): AxFunction {
     return {
-      name: 'DriveList',
+      name: 'ListDriveFiles',
       description: 'List all files in your Google Drive account',
       func: async () => {
-        const { accessToken } = this.config.credentials;
-        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+        const { accessToken, googleServiceApiUrl } = this.config;
 
         try {
           const response = await fetch(`${googleServiceApiUrl}/drive/v3/files`, {

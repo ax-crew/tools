@@ -20,9 +20,8 @@ export class GmailSearch {
   private config: GoogleServiceConfig;
   public state: any;
 
-  constructor(config: GoogleServiceConfig, state: any) {
+  constructor(config: GoogleServiceConfig) {
     this.config = config;
-    this.state = state;
   }
 
   /**
@@ -44,8 +43,7 @@ export class GmailSearch {
         required: ['query']
       },
       func: async ({ query }) => {
-        const { accessToken, refreshToken } = this.config.credentials;
-        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+        const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
           throw new Error('Google service API URL not configured in your crew state');
@@ -105,9 +103,8 @@ export class GmailSend {
   private config: GoogleServiceConfig;
   public state: any;
 
-  constructor(config: GoogleServiceConfig, state: any) {
+  constructor(config: GoogleServiceConfig) {
     this.config = config;
-    this.state = state;
   }
 
   toFunction(): AxFunction {
@@ -137,8 +134,7 @@ export class GmailSend {
         required: ['from', 'to', 'subject', 'body']
       },
       func: async ({ from, to, subject, body }) => {
-        const { refreshToken } = this.config.credentials;
-        const googleServiceApiUrl = this.state.get('googleServiceApiUrl');
+        const { refreshToken, googleServiceApiUrl } = this.config;
         
         function createEmail(from: string, to: string, subject: string, messageText: string): string {
           const emailLines = [
