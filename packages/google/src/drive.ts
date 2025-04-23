@@ -44,7 +44,7 @@ export class DriveSearch {
         const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
-          throw new Error('Google service API URL not configured in your crew state');
+          throw new Error('Google service API URL not configured');
         }
 
         if (!accessToken) {
@@ -87,7 +87,6 @@ export class DriveSearch {
 
 export class ListDriveFiles {
   private config: GoogleServiceConfig;
-  public state: any;
 
   constructor(config: GoogleServiceConfig) {
     this.config = config;
@@ -110,7 +109,7 @@ export class ListDriveFiles {
         const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
-          throw new Error('Google service API URL not configured in your crew state');
+          throw new Error('Google service API URL not configured');
         }
 
         if (!accessToken) {

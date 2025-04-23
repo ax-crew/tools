@@ -15,7 +15,7 @@ import type { GoogleServiceConfig } from './types';
  * const sheetsLister = new ListSheets(config);
  * ```
  */
-export class ListSheets {
+export class ListSheetsWithinSpreadsheet {
   private config: GoogleServiceConfig;
 
   constructor(config: GoogleServiceConfig) {
@@ -28,7 +28,7 @@ export class ListSheets {
    */
   toFunction(): AxFunction {
     return {
-      name: 'ListSheets',
+      name: 'ListSheetsWithinSpreadsheet',
       description: 'List all sheets within a Google Spreadsheet',
       parameters: {
         type: 'object',

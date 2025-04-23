@@ -1,33 +1,13 @@
 import type { AxFunction } from '@ax-llm/ax';
 import type { GoogleServiceConfig } from './types';
 
-/**
- * Gmail search functionality for AxCrew.
- * Enables searching through Gmail messages using Gmail's search query syntax.
- * 
- * @example Configuration:
- * ```typescript
- * const config: GoogleOAuth2Config = {
- *   credentials: {
- *     accessToken: 'your_access_token',
- *     refreshToken: 'your_refresh_token'
- *   }
- * };
- * const gmailSearch = new GmailSearch(config);
- * ```
- */
 export class GmailSearch {
   private config: GoogleServiceConfig;
-  public state: any;
 
   constructor(config: GoogleServiceConfig) {
     this.config = config;
   }
 
-  /**
-   * Creates a function that searches Gmail emails.
-   * @returns {AxFunction} A function that searches Gmail using query strings
-   */
   toFunction(): AxFunction {
     return {
       name: 'GmailSearch',
@@ -46,7 +26,7 @@ export class GmailSearch {
         const { accessToken, googleServiceApiUrl } = this.config;
 
         if (!googleServiceApiUrl) {
-          throw new Error('Google service API URL not configured in your crew state');
+          throw new Error('Google service API URL not configured');
         }
 
         if (!accessToken) {
@@ -54,13 +34,13 @@ export class GmailSearch {
         }
 
         try {
-          const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/search`, {
+          const queryParams = new URLSearchParams({ q: query }).toString();
+          const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/search?${queryParams}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ q: query })
+            }
           });
 
           if (!response.ok) {
@@ -71,7 +51,6 @@ export class GmailSearch {
           return {
             success: true,
             messages: data.messages || [],
-            resultSizeEstimate: data.resultSizeEstimate || 0
           };
         } catch (error) {
           return {
@@ -84,24 +63,8 @@ export class GmailSearch {
   }
 }
 
-/**
- * Gmail email sending functionality for AxCrew.
- * Enables sending emails through Gmail using OAuth2 authentication.
- * 
- * @example Configuration:
- * ```typescript
- * const config: GoogleOAuth2Config = {
- *   credentials: {
- *     accessToken: 'your_access_token',
- *     refreshToken: 'your_refresh_token'
- *   }
- * };
- * const gmailSend = new GmailSend(config);
- * ```
- */
 export class GmailSend {
   private config: GoogleServiceConfig;
-  public state: any;
 
   constructor(config: GoogleServiceConfig) {
     this.config = config;
@@ -114,10 +77,6 @@ export class GmailSend {
       parameters: {
         type: 'object',
         properties: {
-          from: {
-            type: 'string',
-            description: 'Email address of the sender'
-          },
           to: {
             type: 'string',
             description: 'Email address of the recipient'
@@ -131,40 +90,30 @@ export class GmailSend {
             description: 'Body of the email'
           }
         },
-        required: ['from', 'to', 'subject', 'body']
+        required: ['to', 'subject', 'body']
       },
-      func: async ({ from, to, subject, body }) => {
-        const { refreshToken, googleServiceApiUrl } = this.config;
-        
-        function createEmail(from: string, to: string, subject: string, messageText: string): string {
-          const emailLines = [
-            `From: ${from}`,
-            `To: ${to}`,
-            'Content-Type: text/plain; charset="UTF-8"',
-            'MIME-Version: 1.0',
-            `Subject: ${subject}`,
-            '',
-            messageText
-          ];
-          return emailLines.join('\r\n');
+      func: async ({ to, subject, body }) => {
+        const { accessToken, googleServiceApiUrl } = this.config;
+
+        if (!googleServiceApiUrl) {
+          throw new Error('Google service API URL not configured');
         }
-        
-        const rawEmail = createEmail(from, to, subject, body);
-        const encodedEmail = Buffer.from(rawEmail)
-          .toString('base64')
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/=+$/, '');
+
+        if (!accessToken) {
+          throw new Error('Google service Access token is not configured');
+        }
 
         try {
           const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/send`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${refreshToken}`,
+              'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              raw: encodedEmail
+              to,
+              subject,
+              body
             })
           });
 
@@ -178,6 +127,67 @@ export class GmailSend {
             messageId: data.id,
             threadId: data.threadId,
             labelIds: data.labelIds
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error occurred'
+          };
+        }
+      }
+    };
+  }
+}
+
+export class GetGmailMessageById {
+  private config: GoogleServiceConfig;
+
+  constructor(config: GoogleServiceConfig) {
+    this.config = config;
+  }
+
+  toFunction(): AxFunction {
+    return {
+      name: 'GetGmailMessageById',
+      description: 'Retrieve an email from Gmail by messageId',
+      parameters: {
+        type: 'object',
+        properties: {
+          messageId: {
+            type: 'string',
+            description: 'Message Id of the email to retrieve'
+          }
+        },
+        required: ['messageId']
+      },
+      func: async ({ messageId }) => {
+        const { accessToken, googleServiceApiUrl } = this.config;
+
+        if (!googleServiceApiUrl) {
+          throw new Error('Google service API URL not configured');
+        }
+
+        if (!accessToken) {
+          throw new Error('Google service Access token is not configured');
+        }
+
+        try {
+          const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/messages/${messageId}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Gmail search failed: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return {
+            success: true,
+            message: data
           };
         } catch (error) {
           return {
