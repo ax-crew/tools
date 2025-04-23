@@ -52,16 +52,16 @@ export class DriveSearch {
         }
 
         try {
-          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files`, {
+          const params = new URLSearchParams({
+            q: query,
+            fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)'
+          });
+          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files?${params}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              q: query,
-              fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)'
-            })
+            }
           });
 
           if (!response.ok) {
@@ -101,7 +101,12 @@ export class ListDriveFiles {
         const { accessToken, googleServiceApiUrl } = this.config;
 
         try {
-          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files`, {
+          const params = new URLSearchParams({
+            fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)',
+            pageSize: '100',
+            orderBy: 'modifiedTime desc'
+          });
+          const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files?${params}`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
