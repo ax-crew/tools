@@ -96,15 +96,31 @@ export class ListDriveFiles {
   public toFunction(): AxFunction {
     return {
       name: 'ListDriveFiles',
-      description: 'List all files in your Google Drive account',
-      func: async () => {
+      description: 'List files in Google Drive with optional pagination and sorting. Returns most recently modified files by default.',
+      parameters: {
+        type: 'object',
+        properties: {
+          pageSize: {
+            type: 'string',
+            description: 'Number of files to return per page (max: 25)'
+          },
+        }
+      },
+      func: async ({ pageSize = '25' }) => {
         const { accessToken, googleServiceApiUrl } = this.config;
+
+        if (!googleServiceApiUrl) {
+          throw new Error('Google service API URL not configured in your crew state');
+        }
+
+        if (!accessToken) {
+          throw new Error('Google service Access token is not configured');
+        }
 
         try {
           const params = new URLSearchParams({
-            fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)',
-            pageSize: '100',
-            orderBy: 'modifiedTime desc'
+            fields: 'files(id, name, mimeType, modifiedTime, webViewLink)',
+            pageSize
           });
           const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files?${params}`, {
             method: 'GET',
