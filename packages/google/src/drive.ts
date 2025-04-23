@@ -53,7 +53,7 @@ export class DriveSearch {
 
         try {
           const params = new URLSearchParams({
-            q: query,
+            query,
             fields: 'files(id, name, mimeType, modifiedTime, size, webViewLink)'
           });
           const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files?${params}`, {

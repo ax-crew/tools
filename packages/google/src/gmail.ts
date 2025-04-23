@@ -34,7 +34,7 @@ export class GmailSearch {
         }
 
         try {
-          const queryParams = new URLSearchParams({ q: query }).toString();
+          const queryParams = new URLSearchParams({ query }).toString();
           const response = await fetch(`${googleServiceApiUrl}/service/google/gmail/search?${queryParams}`, {
             method: 'GET',
             headers: {
