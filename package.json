@@ -1,6 +1,6 @@
 {
   "name": "@ax-crew/tools",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A repository of packages that provides tools (functions) that can be used by AxLLM Agents",
   "keywords": [],
   "homepage": "https://github.com/ax-crew/tools#readme",
@@ -24,7 +24,7 @@
     "publish-packages": "npm run build && node scripts/publish-packages.js"
   },
   "dependencies": {
-    "@ax-llm/ax": "^11.0.6"
+    "@ax-llm/ax": "^13.0.8"
   },
   "devDependencies": {
     "rimraf": "^5.0.0",

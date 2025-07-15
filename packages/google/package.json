@@ -1,6 +1,6 @@
 {
   "name": "@ax-crew/tools-google",
-  "version": "2.0.14",
+  "version": "2.0.19",
   "main": "dist/packages/google/src/index.js",
   "types": "dist/packages/google/src/index.d.ts",
   "files": [
@@ -12,7 +12,7 @@
     "prepare": "npm run clean && npm run build"
   },
   "peerDependencies": {
-    "@ax-llm/ax": "^11.0.6"
+    "@ax-llm/ax": "^13.0.8"
   },
   "dependencies": {
     "@googleapis/drive": "^5.1.0",

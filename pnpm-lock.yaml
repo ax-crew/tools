@@ -13,8 +13,8 @@ importers:
   .:
     dependencies:
       '@ax-llm/ax':
-        specifier: ^11.0.6
-        version: 11.0.23
+        specifier: ^13.0.8
+        version: 13.0.8
     devDependencies:
       rimraf:
         specifier: ^5.0.0
@@ -29,8 +29,8 @@ importers:
   packages/google:
     dependencies:
       '@ax-llm/ax':
-        specifier: latest
-        version: 11.0.23
+        specifier: ^13.0.8
+        version: 13.0.8
       '@googleapis/drive':
         specifier: ^5.1.0
         version: 5.1.0
@@ -54,8 +54,8 @@ importers:
   packages/wordpress:
     dependencies:
       '@ax-llm/ax':
-        specifier: latest
-        version: 11.0.23
+        specifier: ^13.0.8
+        version: 13.0.8
       https:
         specifier: ^1.0.0
         version: 1.0.0
@@ -75,8 +75,8 @@ importers:
 
 packages:
 
-  '@ax-llm/ax@11.0.23':
-    resolution: {integrity: sha512-vYDpQcWtgua5osjE8bjyxhpnJgKuPw1Ery7Gj2ehDW19w7UAnudhyx3nppqv3oUcXbqvELBfNMSU5r7QnMvlKw==}
+  '@ax-llm/ax@13.0.8':
+    resolution: {integrity: sha512-UlCS2w8jkdABLrQROpHQON+qI5sWIkr7njY1pdS8f7dnOc07vk3rC5ihDCWtF4ftJpYLUFd7s1Qz5EBMKjSs7A==}
 
   '@googleapis/drive@5.1.0':
     resolution: {integrity: sha512-x+Wi4NsbTUl9cBXZMdYRGkF9NQU+D73IrmIjWux98yUi5GTCYGbfItkS7WK7tBrKe8MsoAhNBdLjRCi6zc7y/g==}
@@ -162,6 +162,9 @@ packages:
   data-uri-to-buffer@4.0.1:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
     engines: {node: '>= 12'}
+
+  dayjs@1.11.13:
+    resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
 
   debug@4.4.0:
     resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
@@ -352,12 +355,6 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  moment-timezone@0.5.47:
-    resolution: {integrity: sha512-UbNt/JAWS0m/NJOebR0QMRHBk0hu03r5dx9GK8Cs0AS3I81yDcOc9k+DytPItgVvBP7J6Mf6U2n3BPAacAV9oA==}
-
-  moment@2.30.1:
-    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
-
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
@@ -503,14 +500,10 @@ packages:
 
 snapshots:
 
-  '@ax-llm/ax@11.0.23':
+  '@ax-llm/ax@13.0.8':
     dependencies:
       '@opentelemetry/api': 1.9.0
-      google-auth-library: 9.15.1
-      moment-timezone: 0.5.47
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
+      dayjs: 1.11.13
 
   '@googleapis/drive@5.1.0':
     dependencies:
@@ -593,6 +586,8 @@ snapshots:
       which: 2.0.2
 
   data-uri-to-buffer@4.0.1: {}
+
+  dayjs@1.11.13: {}
 
   debug@4.4.0:
     dependencies:
@@ -853,12 +848,6 @@ snapshots:
       brace-expansion: 2.0.1
 
   minipass@7.1.2: {}
-
-  moment-timezone@0.5.47:
-    dependencies:
-      moment: 2.30.1
-
-  moment@2.30.1: {}
 
   ms@2.1.3: {}
 
