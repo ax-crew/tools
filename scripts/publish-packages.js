@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -23,33 +23,60 @@ async function getPackages() {
   );
 }
 
+function runCommand(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      stdio: 'inherit',
+      ...options
+    });
+
+    const timeout = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error(`Command timed out: ${command} ${args.join(' ')}`));
+    }, 120000); // 2 minute timeout
+
+    child.on('close', (code) => {
+      clearTimeout(timeout);
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command failed with exit code ${code}: ${command} ${args.join(' ')}`));
+      }
+    });
+
+    child.on('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+  });
+}
+
 function publishPackage(packagePath) {
-  try {
-    // Check if there are uncommitted changes in the package directory
+  return new Promise(async (resolve) => {
     try {
-      execSync('git diff --quiet', { cwd: packagePath });
+      // Check if there are uncommitted changes in the package directory
+      try {
+        execSync('git diff --quiet', { cwd: packagePath });
+      } catch (error) {
+        console.error(`Uncommitted changes detected in ${packagePath}. Please commit or stash changes before publishing.`);
+        resolve(false);
+        return;
+      }
+
+      // Increment patch version with --no-git-tag-version to avoid git operations
+      console.log(`Bumping version for ${path.basename(packagePath)}...`);
+      await runCommand('npm', ['version', 'patch', '--no-git-tag-version'], { cwd: packagePath });
+
+      // Publish package with legacy peer deps flag and timeout
+      console.log(`Publishing ${path.basename(packagePath)}...`);
+      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps'], { cwd: packagePath });
+
+      resolve(true);
     } catch (error) {
-      console.error(`Uncommitted changes detected in ${packagePath}. Please commit or stash changes before publishing.`);
-      return false;
+      console.error(`Failed to publish package at ${packagePath}:`, error.message);
+      resolve(false);
     }
-
-    // Increment patch version with --no-git-tag-version to avoid git operations
-    execSync('npm version patch --no-git-tag-version', {
-      cwd: packagePath,
-      stdio: 'inherit'
-    });
-
-    // Publish package with legacy peer deps flag
-    execSync('npm publish --access public --legacy-peer-deps', {
-      cwd: packagePath,
-      stdio: 'inherit'
-    });
-
-    return true;
-  } catch (error) {
-    console.error(`Failed to publish package at ${packagePath}:`, error.message);
-    return false;
-  }
+  });
 }
 
 async function main() {
@@ -75,7 +102,8 @@ async function main() {
   let success = true;
   for (const pkg of packages) {
     console.log(`\nPublishing ${pkg.name}...`);
-    if (!publishPackage(pkg.path)) {
+    const result = await publishPackage(pkg.path);
+    if (!result) {
       success = false;
       break;
     }
