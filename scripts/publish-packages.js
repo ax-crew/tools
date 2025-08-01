@@ -69,7 +69,7 @@ function publishPackage(packagePath) {
 
       // Publish package with legacy peer deps flag and timeout
       console.log(`Publishing ${path.basename(packagePath)}...`);
-      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps'], { cwd: packagePath });
+      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps', '--yes'], { cwd: packagePath });
 
       resolve(true);
     } catch (error) {
