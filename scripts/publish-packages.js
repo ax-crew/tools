@@ -63,18 +63,26 @@ function publishPackage(packagePath) {
         return;
       }
 
+      const packageName = path.basename(packagePath);
+      
+      // Change to package directory and run commands there
+      process.chdir(packagePath);
+      
       // Increment patch version with --no-git-tag-version to avoid git operations
-      console.log(`Bumping version for ${path.basename(packagePath)}...`);
-      await runCommand('npm', ['version', 'patch', '--no-git-tag-version'], { cwd: packagePath });
+      console.log(`Bumping version for ${packageName}...`);
+      await runCommand('npm', ['version', 'patch', '--no-git-tag-version']);
 
       // Publish package with legacy peer deps flag and timeout
-      console.log(`Publishing ${path.basename(packagePath)}...`);
-      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps', '--yes'], { cwd: packagePath });
+      console.log(`Publishing ${packageName}...`);
+      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps', '--yes']);
 
       resolve(true);
     } catch (error) {
       console.error(`Failed to publish package at ${packagePath}:`, error.message);
       resolve(false);
+    } finally {
+      // Always return to the original directory
+      process.chdir(path.join(__dirname, '..'));
     }
   });
 }
