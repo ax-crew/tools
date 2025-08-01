@@ -1,6 +1,6 @@
 {
   "name": "@ax-crew/tools-google",
-  "version": "2.0.27",
+  "version": "2.0.28",
   "main": "dist/packages/google/src/index.js",
   "types": "dist/packages/google/src/index.d.ts",
   "files": [

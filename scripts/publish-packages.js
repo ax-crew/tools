@@ -65,24 +65,18 @@ function publishPackage(packagePath) {
 
       const packageName = path.basename(packagePath);
       
-      // Change to package directory and run commands there
-      process.chdir(packagePath);
-      
       // Increment patch version with --no-git-tag-version to avoid git operations
       console.log(`Bumping version for ${packageName}...`);
-      await runCommand('npm', ['version', 'patch', '--no-git-tag-version']);
+      await runCommand('npm', ['version', 'patch', '--no-git-tag-version'], { cwd: packagePath });
 
-      // Publish package with legacy peer deps flag and timeout
+      // Publish package - simplified command that works manually
       console.log(`Publishing ${packageName}...`);
-      await runCommand('npm', ['publish', '--access', 'public', '--legacy-peer-deps', '--yes']);
+      await runCommand('npm', ['publish', '--access', 'public'], { cwd: packagePath });
 
       resolve(true);
     } catch (error) {
       console.error(`Failed to publish package at ${packagePath}:`, error.message);
       resolve(false);
-    } finally {
-      // Always return to the original directory
-      process.chdir(path.join(__dirname, '..'));
     }
   });
 }
