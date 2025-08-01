@@ -21,7 +21,8 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "clean": "npm run clean --workspaces",
-    "publish-packages": "npm run build && node scripts/publish-packages.js"
+    "publish-packages": "npm run build && node scripts/publish-packages.js",
+    "test:drive-descriptions": "tsx examples/drive.ts"
   },
   "dependencies": {
     "@ax-llm/ax": "^13.0.8"
@@ -29,7 +30,8 @@
   "devDependencies": {
     "rimraf": "^5.0.0",
     "typescript": "^5.0.0",
-    "semver": "^7.5.4"
+    "semver": "^7.5.4",
+    "tsx": "^4.0.0"
   },
   "resolutions": {
     "webpack": "^3.12.0",

@@ -118,7 +118,7 @@ export class ListDriveFiles {
 
         try {
           const params = new URLSearchParams({
-            fields: 'files(id, name, mimeType, modifiedTime, webViewLink)',
+            fields: 'files(id, name, description, mimeType, modifiedTime, webViewLink)',
             pageSize
           });
           const response = await fetch(`${googleServiceApiUrl}/service/google/drive/files?${params}`, {

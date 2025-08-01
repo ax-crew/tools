@@ -1,6 +1,6 @@
 import { AxCrew } from "@amitdeshmukh/ax-crew";
 import type { FunctionRegistryType } from "@amitdeshmukh/ax-crew";
-import { WordPressPost, WordPressConfig } from "@ax-crew/tools-wordpress";
+import { WordPressPost, WordPressConfig } from "../packages/wordpress/src";
 
 // AxCrew configuration
 const config = {
