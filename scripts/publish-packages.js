@@ -25,8 +25,16 @@ async function getPackages() {
 
 function publishPackage(packagePath) {
   try {
-    // Increment patch version
-    execSync('npm version patch', {
+    // Check if there are uncommitted changes in the package directory
+    try {
+      execSync('git diff --quiet', { cwd: packagePath });
+    } catch (error) {
+      console.error(`Uncommitted changes detected in ${packagePath}. Please commit or stash changes before publishing.`);
+      return false;
+    }
+
+    // Increment patch version with --no-git-tag-version to avoid git operations
+    execSync('npm version patch --no-git-tag-version', {
       cwd: packagePath,
       stdio: 'inherit'
     });
@@ -50,6 +58,14 @@ async function main() {
     execSync('npm whoami', { stdio: 'inherit' });
   } catch (error) {
     console.error('You must be logged in to npm. Run npm login first.');
+    process.exit(1);
+  }
+
+  // Check if there are uncommitted changes in the root directory
+  try {
+    execSync('git diff --quiet', { cwd: path.join(__dirname, '..') });
+  } catch (error) {
+    console.error('Uncommitted changes detected in the root directory. Please commit or stash changes before publishing.');
     process.exit(1);
   }
 
