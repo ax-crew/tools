@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import { DriveSearch, ListDriveFiles } from '../packages/google/src/drive';
-import type { GoogleServiceConfig } from '../packages/google/src/types';
+import { DriveSearch, ListDriveFiles } from '../packages/google/dist/packages/google/src/index.js';
+import type { GoogleServiceConfig } from '../packages/google/dist/packages/google/src/types.js';
 
 /**
  * Test script to debug Google Drive description field issue
